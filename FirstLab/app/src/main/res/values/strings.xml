@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="names">
+        <item>Ivan</item>
+        <item>Maria</item>
+        <item>Petr</item>
+    </string-array>
+    <string name="button_string">Button</string>
+    <string name="name_string">Name</string>
+    <string name="app_name">my_app</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

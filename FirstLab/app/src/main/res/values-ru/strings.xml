@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="names">
+        <item>Иван</item>
+        <item>Марья</item>
+        <item>Петр</item>
+    </string-array>
+    <string name="button_string">Кнопка</string>
+    <string name="name_string">Имя</string>
+    <string name="app_name">my_app</string>
+</resources>
