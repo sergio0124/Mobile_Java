@@ -1,8 +1,14 @@
 package com.example.laba4;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sPref;
     StudentStorage storage;
     DatabaseHelper dbHelper;
+    IService serviceBD;
+    Intent serviceIntent;
+    private ServiceConnection conn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +47,26 @@ public class MainActivity extends AppCompatActivity {
         LoadData();
     }
 
-    public void LoadData(){
-        sPref= getPreferences(MODE_PRIVATE);
+    public void LoadData() {
+        sPref = getPreferences(MODE_PRIVATE);
         nameText = (EditText) findViewById(R.id.nameText);
         ageText = (EditText) findViewById(R.id.ageText);
         listView = (ListView) findViewById(R.id.list);
         users = new ArrayList<Student>();
         dbHelper = new DatabaseHelper(getBaseContext());
         storage = new StudentStorage(getBaseContext());
+        serviceIntent = new Intent(this, ServiceBD.class);
+        conn = new ServiceConnection() {
+            public void onServiceConnected(ComponentName name, IBinder binder) {
+                Log.d("MyLog", "MainActivity onServiceConnected");
+                serviceBD = (IService) binder;
+            }
+
+            public void onServiceDisconnected(ComponentName name) {
+            }
+        };
+        this.startService(serviceIntent);
+        this.bindService(serviceIntent, conn, BIND_AUTO_CREATE);
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
         listView.setAdapter(adapter);
@@ -57,85 +78,99 @@ public class MainActivity extends AppCompatActivity {
                 stud.name = "changed";
 
                 CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
-                if(checkboxFoulder.isChecked()){
-                    storage.update(stud);
+                if (checkboxFoulder.isChecked()) {
+                    //storage.update(stud);
+                    serviceBD.update(stud);
                     LoadData();
-                }
-                else{
+                } else {
                     Toast.makeText(getBaseContext(), "Не реализовано обновление для JSON", Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-    public void loadData(View view){
+    public void loadData(View view) {
         LoadData();
     }
 
-    public void delete(View view){
+    public void delete(View view) {
         CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
-        if(checkboxFoulder.isChecked()){
+        if (checkboxFoulder.isChecked()) {
             dbHelper.delete(getBaseContext());
-        }
-        else{
+        } else {
             JSONHelper.deleteFile();
         }
     }
 
-    public void addUser(View view){
+    public void addUser(View view) {
         String name = nameText.getText().toString();
         int age = Integer.parseInt(ageText.getText().toString());
         com.example.laba4.Student user = new com.example.laba4.Student();
-        user.name=name;
-        user.age=age;
-        user.isStuding=true;
+        user.name = name;
+        user.age = age;
+        user.isStuding = true;
         users.add(user);
         adapter.notifyDataSetChanged();
     }
 
-    public void save(View view){
+    public void save(View view) {
         CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
-        if(checkboxFoulder.isChecked()){
-            for(Student stud : users){
-                if(stud.id!=0){
-                    storage.update(stud);
+        if (checkboxFoulder.isChecked()) {
+            for (Student stud : users) {
+                if (stud.id != 0) {
+                    // storage.update(stud);
+                    serviceBD.update(stud);
                     return;
                 }
-                else storage.insert(stud);
+                //else storage.insert(stud);
+                serviceBD.insert(stud);
             }
-        }
-        else{
-            boolean result = com.example.laba4.JSONHelper.exportToJSON(this, users);
-            if(result){
-                Toast.makeText(this, "Данные сохранены", Toast.LENGTH_LONG).show();
-            }
-            else{
-                Toast.makeText(this, "Не удалось сохранить данные", Toast.LENGTH_LONG).show();
-            }
+        } else {
+            Runnable runnable = new Runnable() {
+                Context context = getBaseContext();
+                @Override
+                public void run() {
+                    com.example.laba4.JSONHelper.exportToJSON(context, users);
+                }
+            };
+            Thread thread = new Thread(runnable);
+            // Запускаем поток
+            thread.start();
         }
     }
 
-    public void open(View view){
+    public void open(View view) {
         CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
-        if(checkboxFoulder.isChecked()){
-            List<Student> studs = storage.getFullList();
+        if (checkboxFoulder.isChecked()) {
+            // List<Student> studs = storage.getFullList();
+            List<Student> studs = serviceBD.getList();
             users = studs;
-            if(users!=null){
+            if (users != null) {
                 adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
                 listView.setAdapter(adapter);
                 Toast.makeText(this, "Данные восстановлены", Toast.LENGTH_LONG).show();
             }
-        }
-        else{
-            users = com.example.laba4.JSONHelper.importFromJSON(this);
-            if(users!=null){
-                adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
-                listView.setAdapter(adapter);
-                Toast.makeText(this, "Данные восстановлены", Toast.LENGTH_LONG).show();
-            }
-            else{
-                Toast.makeText(this, "Не удалось открыть данные", Toast.LENGTH_LONG).show();
-            }
+        } else {
+            Context context = getBaseContext();
+            Runnable runnable = new Runnable() {
+                Context context = getBaseContext();
+
+                @Override
+                public void run() {
+                    users = com.example.laba4.JSONHelper.importFromJSON(context);
+
+                    adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, users);
+                    listView.post(new Runnable() {
+                        public void run() {
+                            listView.setAdapter(adapter);
+                        }
+                    });
+
+                }
+            };
+            Thread thread = new Thread(runnable);
+            // Запускаем поток
+            thread.start();
         }
     }
 
@@ -144,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         DataItems dataItems = new DataItems();
         dataItems.setUsers(users);
         String jsonString = gson.toJson(dataItems);
-        Editor prefsEditor=sPref.edit();
+        Editor prefsEditor = sPref.edit();
         prefsEditor.putString("MyObject", jsonString);
         prefsEditor.commit();
         Toast.makeText(this, "Данные сохранены", Toast.LENGTH_LONG).show();
@@ -154,11 +189,12 @@ public class MainActivity extends AppCompatActivity {
         Gson gson = new Gson();
         String json = sPref.getString("MyObject", "");
         DataItems obj = gson.fromJson(json, DataItems.class);
-        users=obj.getUsers();
-        if(users!=null){
+        users = obj.getUsers();
+        if (users != null) {
             adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
             listView.setAdapter(adapter);
             Toast.makeText(this, "Данные восстановлены Prefs", Toast.LENGTH_LONG).show();
         }
     }
+
 }

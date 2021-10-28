@@ -9,9 +9,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Laba4">
+        <service
+            android:name=".ServiceBD"
+            android:enabled="true"
+            android:exported="true"></service>
+
         <activity
             android:name=".IsDatabaseActivity"
-            android:exported="true">=
+            android:exported="true">
+            =
         </activity>
         <activity
             android:name=".MainActivity"
