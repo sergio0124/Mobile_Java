@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".IsDatabaseActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <CheckBox
+            android:id="@+id/database_checkbox"
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:text="To save data in database">
+        </CheckBox>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="100px"
+            android:id="@+id/newActivityButton"
+            android:onClick="Button_click"
+            android:text="open activity">
+        </Button>
+
+    </LinearLayout>
+
+</LinearLayout>
