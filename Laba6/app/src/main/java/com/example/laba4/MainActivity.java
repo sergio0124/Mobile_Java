@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.list);
         users = new ArrayList<Student>();
         dbHelper = new DatabaseHelper(getBaseContext());
+
         storage = new StudentStorage(getBaseContext());
         serviceIntent = new Intent(this, ServiceBD.class);
         conn = new ServiceConnection() {
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         };
         this.startService(serviceIntent);
         this.bindService(serviceIntent, conn, BIND_AUTO_CREATE);
+
 
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
         listView.setAdapter(adapter);
@@ -87,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        syncDatabases();
     }
 
     public void loadData(View view) {
@@ -128,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Runnable runnable = new Runnable() {
                 Context context = getBaseContext();
+
                 @Override
                 public void run() {
                     com.example.laba4.JSONHelper.exportToJSON(context, users);
@@ -195,6 +199,38 @@ public class MainActivity extends AppCompatActivity {
             listView.setAdapter(adapter);
             Toast.makeText(this, "Данные восстановлены Prefs", Toast.LENGTH_LONG).show();
         }
+    }
+
+
+    private void syncDatabases() {
+
+        Context context = getBaseContext();
+        storage = new StudentStorage(context);
+        List<Student> studsBD = storage.getFullList();
+        List<Student> studsJSON = com.example.laba4.JSONHelper.importFromJSON(context);
+        for (Student student : studsJSON) {
+            student.id = 0;
+        }
+
+        for (Student stud : studsJSON) {
+            boolean isExist = false;
+            for (Student st : studsBD) {
+                if (st.isStuding == stud.isStuding &&
+                        st.age == stud.age &&
+                        st.name == stud.name) {
+                    isExist=true;
+                    continue;
+                }
+            }
+            if(!isExist) studsBD.add(stud);
+        }
+
+        for (Student stud : studsBD) {
+            if (stud.id != 0) {
+                storage.update(stud);
+            } else storage.insert(stud);
+        }
+        com.example.laba4.JSONHelper.exportToJSON(context, studsBD);
     }
 
 }

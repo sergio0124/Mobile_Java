@@ -9,10 +9,25 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Laba4">
+
+        <receiver
+            android:name=".MyWidget"
+            android:exported="true"
+            android:icon="@android:drawable/star_big_on"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_metadata"></meta-data>
+        </receiver>
+
         <service
             android:name=".ServiceBD"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
             android:name=".IsDatabaseActivity"

@@ -3,6 +3,7 @@ package com.example.laba4.Database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import com.example.laba4.Database.DatabaseHelper;
 import com.example.laba4.Student;
@@ -107,4 +108,7 @@ public class StudentStorage {
         db.delete(TABLE,where,null);
     }
 
+    public int getElementCount(){
+        return (int)DatabaseUtils.queryNumEntries(db, TABLE);
+    }
 }

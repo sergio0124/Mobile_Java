@@ -44,7 +44,6 @@ public class ServiceBD extends Service {
     @Override
     public boolean onUnbind(Intent intent)
     {
-        System.out.println("onunbind");
         return super.onUnbind(intent);
     }
 
@@ -63,6 +62,10 @@ public class ServiceBD extends Service {
     public List<Student> getList(){
         List<Student> students = storage.getFullList();
         return students;
+    }
+
+    public int getCount() {
+        return storage.getElementCount();
     }
 
     public void delete(Student student){
@@ -90,5 +93,8 @@ public class ServiceBD extends Service {
         public void delete(Student student){
             ServiceBD.this.delete(student);
         }
+
+        @Override
+        public int getCount() {return ServiceBD.this.getCount(); }
     }
 }
