@@ -29,10 +29,8 @@ public class MyWidget extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager,
                          int[] appWidgetIds) {
-        SharedPreferences sp = context.getSharedPreferences(
-                "DB", Context.MODE_PRIVATE);
         for (int id : appWidgetIds) {
-            updateWidget(context, appWidgetManager, sp, id);
+            updateWidget(context, appWidgetManager, id);
         }
     }
 
@@ -43,7 +41,7 @@ public class MyWidget extends AppWidgetProvider {
     }
 
     static void updateWidget(Context context, AppWidgetManager appWidgetManager,
-                             SharedPreferences sp, int widgetID) {
+                             int widgetID) {
         Log.d(LOG_TAG, "updateWidget " + widgetID);
         if (storage == null) {
             storage=new StudentStorage(context);

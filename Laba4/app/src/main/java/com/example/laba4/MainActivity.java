@@ -30,14 +30,11 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayAdapter<com.example.laba4.Student> adapter;
     private EditText nameText, ageText;
-    private List<Student> users;
+    private List<Student> users = new ArrayList<>();
     ListView listView;
     SharedPreferences sPref;
     StudentStorage storage;
     DatabaseHelper dbHelper;
-    IService serviceBD;
-    Intent serviceIntent;
-    private ServiceConnection conn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         LoadData();
+        syncDatabases();
     }
 
     public void LoadData() {
@@ -56,40 +54,8 @@ public class MainActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(getBaseContext());
 
         storage = new StudentStorage(getBaseContext());
-        serviceIntent = new Intent(this, ServiceBD.class);
-        conn = new ServiceConnection() {
-            public void onServiceConnected(ComponentName name, IBinder binder) {
-                Log.d("MyLog", "MainActivity onServiceConnected");
-                serviceBD = (IService) binder;
-            }
-
-            public void onServiceDisconnected(ComponentName name) {
-            }
-        };
-        this.startService(serviceIntent);
-        this.bindService(serviceIntent, conn, BIND_AUTO_CREATE);
-
-
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
         listView.setAdapter(adapter);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            public void onItemClick(AdapterView<?> parent, View view,
-                                    int position, long id) {
-                Student stud = (Student) parent.getItemAtPosition(position);
-                stud.name = "changed";
-
-                CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
-                if (checkboxFoulder.isChecked()) {
-                    //storage.update(stud);
-                    serviceBD.update(stud);
-                    LoadData();
-                } else {
-                    Toast.makeText(getBaseContext(), "Не реализовано обновление для JSON", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
-        syncDatabases();
     }
 
     public void loadData(View view) {
@@ -99,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
     public void delete(View view) {
         CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
         if (checkboxFoulder.isChecked()) {
-            dbHelper.delete(getBaseContext());
+            storage.delete();
         } else {
-            JSONHelper.deleteFile();
+            JSONHelper.deleteFile(getBaseContext());
         }
     }
 
@@ -121,12 +87,8 @@ public class MainActivity extends AppCompatActivity {
         if (checkboxFoulder.isChecked()) {
             for (Student stud : users) {
                 if (stud.id != 0) {
-                    // storage.update(stud);
-                    serviceBD.update(stud);
-                    return;
-                }
-                //else storage.insert(stud);
-                serviceBD.insert(stud);
+                    storage.update(stud);
+                } else storage.insert(stud);
             }
         } else {
             Runnable runnable = new Runnable() {
@@ -146,13 +108,11 @@ public class MainActivity extends AppCompatActivity {
     public void open(View view) {
         CheckBox checkboxFoulder = findViewById(R.id.checkboxFoulder);
         if (checkboxFoulder.isChecked()) {
-            // List<Student> studs = storage.getFullList();
-            List<Student> studs = serviceBD.getList();
+            List<Student> studs = storage.getFullList();
             users = studs;
             if (users != null) {
                 adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, users);
                 listView.setAdapter(adapter);
-                Toast.makeText(this, "Данные восстановлены", Toast.LENGTH_LONG).show();
             }
         } else {
             Context context = getBaseContext();
@@ -162,14 +122,10 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     users = com.example.laba4.JSONHelper.importFromJSON(context);
-
-                    adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, users);
-                    listView.post(new Runnable() {
-                        public void run() {
-                            listView.setAdapter(adapter);
-                        }
-                    });
-
+                    if (users != null) {
+                        adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, users);
+                        listView.post(() -> listView.setAdapter(adapter));
+                    }
                 }
             };
             Thread thread = new Thread(runnable);
@@ -208,22 +164,27 @@ public class MainActivity extends AppCompatActivity {
         storage = new StudentStorage(context);
         List<Student> studsBD = storage.getFullList();
         List<Student> studsJSON = com.example.laba4.JSONHelper.importFromJSON(context);
-        for (Student student : studsJSON) {
-            student.id = 0;
-        }
-
-        for (Student stud : studsJSON) {
-            boolean isExist = false;
-            for (Student st : studsBD) {
-                if (st.isStuding == stud.isStuding &&
-                        st.age == stud.age &&
-                        st.name == stud.name) {
-                    isExist=true;
-                    continue;
-                }
+        if (studsJSON != null)
+            for (Student student : studsJSON) {
+                student.id = 0;
             }
-            if(!isExist) studsBD.add(stud);
-        }
+
+        if (studsJSON != null)
+            for (Student stud : studsJSON) {
+                boolean isExist = false;
+                for (Student st : studsBD) {
+                    if (st.isStuding & stud.isStuding | !st.isStuding & !stud.isStuding) {
+                        if (st.age == stud.age) {
+                            if (st.name.equals(stud.name)) {
+                                isExist = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!isExist)
+                    studsBD.add(stud);
+            }
 
         for (Student stud : studsBD) {
             if (stud.id != 0) {

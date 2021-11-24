@@ -108,6 +108,10 @@ public class StudentStorage {
         db.delete(TABLE,where,null);
     }
 
+    public void delete() {
+        db.delete(TABLE,null,null);
+    }
+
     public int getElementCount(){
         return (int)DatabaseUtils.queryNumEntries(db, TABLE);
     }

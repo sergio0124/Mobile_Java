@@ -23,7 +23,6 @@ class JSONHelper {
         String jsonString = gson.toJson(dataItems);
 
         FileOutputStream fileOutputStream = null;
-
         try {
             fileOutputStream = context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
             fileOutputStream.write(jsonString.getBytes());
@@ -43,13 +42,20 @@ class JSONHelper {
         return false;
     }
 
-    static void deleteFile(){
-        File fdelete = new File(FILE_NAME);
-        if (fdelete.exists()) {
-            if (fdelete.delete()) {
-                System.out.println("file Deleted :" + FILE_NAME);
-            } else {
-                System.out.println("file not Deleted :" + FILE_NAME);
+    static void deleteFile(Context context) {
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream = context.openFileOutput(FILE_NAME, Context.MODE_PRIVATE);
+            fileOutputStream.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -58,17 +64,16 @@ class JSONHelper {
 
         InputStreamReader streamReader = null;
         FileInputStream fileInputStream = null;
-        try{
+        try {
             fileInputStream = context.openFileInput(FILE_NAME);
             streamReader = new InputStreamReader(fileInputStream);
             Gson gson = new Gson();
             DataItems dataItems = gson.fromJson(streamReader, DataItems.class);
-            return  dataItems.getUsers();
-        }
-        catch (IOException ex){
+            if (dataItems != null) return dataItems.getUsers();
+            else return null;
+        } catch (IOException ex) {
             ex.printStackTrace();
-        }
-        finally {
+        } finally {
             if (streamReader != null) {
                 try {
                     streamReader.close();
