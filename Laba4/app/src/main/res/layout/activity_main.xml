@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/nameText"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Введите имя" />
+
+    <EditText
+        android:id="@+id/ageText"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Введите возраст" />
+
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Учится ли он сейчас" />
+
+    <Button
+        android:id="@+id/addButton"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Добавить"
+        android:onClick="addUser"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        tools:ignore="MissingConstraints">
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="210dp"
+            android:layout_height="match_parent"
+            android:onClick="save"
+            android:text="Сохранить" />
+        <Button
+            android:id="@+id/openButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Открыть"
+            android:onClick="open"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/savePrefsButton"
+            android:layout_width="208dp"
+            android:layout_height="match_parent"
+            android:onClick="savePrefs"
+            android:text="Сохранить Prefs" />
+
+        <Button
+            android:id="@+id/openPrefsButton"
+            android:layout_width="213dp"
+            android:layout_height="match_parent"
+            android:onClick="loadPrefs"
+            android:text="Открыть Prefs" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/RefreshPage"
+            android:layout_width="208dp"
+            android:layout_height="match_parent"
+            android:onClick="loadData"
+            android:text="Перегрузить страницу" />
+
+        <Button
+            android:id="@+id/DeleteFile"
+            android:layout_width="213dp"
+            android:layout_height="match_parent"
+            android:onClick="delete"
+            android:text="Удалить файл" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/checkboxFoulder"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Используем БД" />
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toBottomOf="@id/openButton" />
+
+</LinearLayout>
